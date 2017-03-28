@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+    <script src='http://d3js.org/d3.v3.min.js'></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+    <style>
+      h2 {
+        text-align: center;
+      }
+
+      div.tooltip { 
+        position: absolute;     
+        text-align: left;     
+        width: 210px;          
+        height: 355px;         
+        padding: 2px;       
+        font: 12px sans-serif;    
+        color: lightgrey;
+        background: rgb(40, 37, 37); 
+        border: 0px;    
+        border-radius: 8px;     
+        pointer-events: none;     
+      }
+
+      div.by_sur_vs_age {
+        position: fixed;
+        text-align: center;  
+        top: 5px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.by_sur_vs_pclass {
+        position: fixed;
+        text-align: center;  
+        top: 30px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.combine {
+        position: fixed;
+        text-align: center;  
+        top: 55px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.test {
+        position: fixed;
+        text-align: center;  
+        top: 80px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+    </style>
+    <script type='text/javascript'>  
+    
+        // Draw scatter plot
+        function plot_points(data) {           
+
+        // Create title
+        d3.select('body')
+            .append('h2')
+            .text('Titanic Survivors Data (Mouseover for more details)')
+
+        // Create Tooltip
+        var tooltip = d3.select('body')
+            .append('div')
+            .attr('class', 'tooltip')
+            .style('position', 'absolute')
+            .style('z-index', '10')
+            .style('visibility', 'hidden');
+
+        // Create margin/container for scatter-plot
+        var margin = {top: 20, right: 20, bottom: 30, left: 230},
+            width = 1400 - margin.left - margin.right,
+            height = 800 - margin.top - margin.bottom;
+
+        // Create svg container and chart area
+        var svg = d3.select('body')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // Set range of pixels to be used by X-axis in svg container
+        var x = d3.scale.linear()
+            .range([0, width]);
+
+        // Set X-axis to bottom and scale based on x
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom');        
+
+        // Set range of pixels to be used by Y-axis in svg container (Top-down)
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        // Set X-axis to left and scale based on x
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left');
+
+        // Set color scale
+        var color = d3.scale.category10();
+        
+        // Set X-axis domains, values to be used on X-axis with nice rounding
+        x.domain(d3.extent(data, function(d) { 
+            return d.Age; 
+        })).nice();
+
+        // Set X-axis domains, values to be used on Y-axis with nice rounding
+        y.domain(d3.extent(data, function(d) { 
+            return d.Survived; 
+        })).nice();
+
+        // Append X-axis to svg chart
+        svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis)
+            .append('text')
+            .attr('class', 'label')
+            .attr('x', width)
+            .attr('y', -6) // Unsure of the function of this attribute
+            .style('text-anchor', 'end')
+            .text('Age');
+
+        // Append Y-axis to svg chart
+        svg.append('g')
+            .attr('class', 'y axis')
+            .call(yAxis)
+            .append('text')
+            .attr('class', 'label')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 6) // Unsure of the function of this attribute
+            .attr('dy', '.71em') // Spacing for text
+            .style('text-anchor', 'end')
+            .text('Survived/Perished');
+
+        // Append dots to svg chart
+        svg.selectAll('.dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'dot')
+            .attr('r', 3.5)
+            .attr('cx', function(d) { 
+              return x(d.Age); 
+            })
+            .attr('cy', function(d) { 
+              return y(d.Survived); 
+            })
+            .style('fill', function(d) { 
+              return color(d.Sex); 
+            })
+            .on('mouseover', function(d) {
+              tooltip.style('visibility', 'visible')
+              .style('top', (event.pageY - 10) + 'px')
+              .style('left', (event.pageX + 10) + 'px')
+              .style('height', 100 + 'px')
+              .style('width', 320 + 'px')
+              .html('<b>' + 'Location: ' + '</b>' + d.Embarked + '<br>' + '<br>'
+                + '<b>' + 'Name: ' + '</b>' + d.Name + '<br>'
+                + '<b>' + 'Sex: ' + '</b>' + d.Sex + '<br>'
+                + '<b>' + 'Age: ' + '</b>' + d.Age + '<br>'
+                + '<b>' + 'Passenger Class: ' + '</b>' + d.Pclass + '<br>'
+                + '<b>' + 'Survived: ' + '</b>' + d.Survived + '<br>')
+            })
+            .on('mouseout', function(d) {
+              tooltip.style('visibility', 'hidden');
+            });
+
+        // Create svg chart legend
+        var legend = svg.selectAll(".legend")
+            .data(color.domain())
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { 
+              return "translate(0," + i * 20 + ")"; 
+            });
+
+        // Append legend to svg chart
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function(d) { 
+              return d; 
+            });
+
+        // Function to extract data based on embark location
+        function data_extract(data) {
+
+            var sur_pclass_1 = d3.sum(data, function(d) {
+                if (d.Survived === 1 && d.Pclass === 1) {
+                    return 1;
+                };
+            });
+
+            var sur_pclass_2 = d3.sum(data, function(d) {
+                if (d.Survived === 1 && d.Pclass === 2) {
+                    return 1;
+                };
+            });
+            
+            var sur_pclass_3 = d3.sum(data, function(d) {
+                if (d.Survived === 1 && d.Pclass === 3) {
+                    return 1;
+                };
+            });
+
+          var su_male = d3.sum(data, function(d) {
+            if (d.Sex === 'male' && d.Survived === 1) {
+              return 1;
+            }
+          });
+          
+          var su_female = d3.sum(data, function(d) {
+            if (d.Sex === 'female' && d.Survived === 1) {
+              return 1;
+            }
+          });
+
+          var total_survivors = d3.sum(data, function(d) {
+            return d.Survived;
+          });
+   
+            debugger;
+
+
+          var min_pclass = d3.min(data, function(d) {
+            return d['Pclass'];
+          });
+
+          var max_pclass = d3.max(data, function(d) {
+            return d['Pclass'];
+          });
+
+          var avg_pclass = d3.mean(data, function(d) {
+            return d['Pclass'];
+          });
+
+          var median_pclass = d3.median(data, function(d) {
+            return d['Pclass'];
+          });
+
+          var min_age = d3.min(data, function(d) {
+            return d['Age'];
+          });
+
+          var max_age = d3.max(data, function(d) {
+            return d['Age'];
+          });
+
+          var median_age = d3.median(data, function(d) {
+            return d['Age'];
+          });
+
+          var avg_age = d3.mean(data, function(d) {
+            return d['Age'];
+          });
+
+          var avg_su_age = d3.mean(data, function(d) {
+            if (d['Survived'] === 1) {
+              return d['Age'];
+            };
+          });
+
+          var avg_male_su_age = d3.mean(data, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return d['Age'];
+            };
+          });
+
+          var avg_female_su_age = d3.mean(data, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return d['Age'];
+            };
+          });
+
+          var avg_su_pclass = d3.mean(data, function(d) {
+            if (d['Survived'] === 1) {
+              return d['Pclass'];
+            };
+          });
+
+          var avg_su_male_pclass = d3.mean(data, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return d['Pclass'];
+            };
+          });
+
+          var avg_su_female_pclass = d3.mean(data, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return d['Pclass'];
+            };
+          });    
+
+          return {
+            'sur_pclass_1': sur_pclass_1,
+            'sur_pclass_2': sur_pclass_2,
+            'sur_pclass_3': sur_pclass_3,
+            'Survived': total_survivors,
+            'sur_pclass_list': sur_pclass_list,
+            'min_pclass': min_pclass.toFixed(3),
+            'median_pclass': median_pclass.toFixed(3),
+            'max_pclass': max_pclass.toFixed(3),
+            'Pclass': avg_pclass.toFixed(3),
+            'min_age': min_age.toFixed(3),
+            'median_age': median_age.toFixed(3),
+            'max_age': max_age.toFixed(3),
+            'Age': avg_age.toFixed(3),
+            'avg_su_age': avg_su_age.toFixed(3),
+            'avg_male_su_age': avg_male_su_age.toFixed(3),
+            'avg_female_su_age': avg_female_su_age.toFixed(3),
+            'avg_su_pclass': avg_su_pclass.toFixed(3),
+            'avg_su_male_pclass': avg_su_male_pclass.toFixed(3),
+            'avg_su_female_pclass': avg_su_female_pclass.toFixed(3),
+          };
+        } // End of function data_extract  
+        
+        // Display survivors by age
+        var by_sur_vs_age = d3.select('body')
+            .append('div')
+            .attr('class', 'by_sur_vs_age')
+            .text('Survivors By Age')
+            .on('click', function(d) {
+                d3.selectAll('svg').remove()
+
+                // Create svg container and chart area
+                var svg = d3.select('body')
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                // Set range of pixels to be used by X-axis in svg container
+                var x = d3.scale.linear()
+                    .range([0, width]);
+
+                // Set X-axis to bottom and scale based on x
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom');        
+
+                // Set range of pixels to be used by Y-axis in svg container (Top-down)
+                var y = d3.scale.linear()
+                .range([height, 0]);
+
+                // Set X-axis to left and scale based on x
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left');
+
+                // Set color scale
+                var color = d3.scale.category10();
+    
+                // Set X-axis domains, values to be used on X-axis with nice rounding
+                x.domain(d3.extent(data, function(d) { 
+                    return d.Age; 
+                })).nice();
+
+                // Set X-axis domains, values to be used on Y-axis with nice rounding
+                y.domain(d3.extent(data, function(d) { 
+                    return d.Survived; 
+                })).nice();
+
+                // Append X-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', 'translate(0,' + height + ')')
+                    .call(xAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('x', width)
+                    .attr('y', -6) // Unsure of the function of this attribute
+                    .style('text-anchor', 'end')
+                    .text('Age');
+
+                // Append Y-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .call(yAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', 6) // Unsure of the function of this attribute
+                    .attr('dy', '.71em') // Spacing for text
+                    .style('text-anchor', 'end')
+                    .text('Survived/Perished');                
+                
+
+                // Append dots to svg chart
+                svg.selectAll('.dot')
+                    .data(data)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'dot')
+                    .attr('r', 3.5)
+                    .attr('cx', function(d) { 
+                        return x(d.Age); 
+                    })
+                    .attr('cy', function(d) { 
+                        return y(d.Survived); 
+                    })
+                    .style('fill', function(d) { 
+                        return color(d.Sex); 
+                    })
+                    .on('mouseover', function(d) {
+                        tooltip.style('visibility', 'visible')
+                            .style('top', (event.pageY - 10) + 'px')
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('height', 100 + 'px')
+                            .style('width', 320 + 'px')
+                            .html('<b>' + 'Location: ' + '</b>' + d.Embarked + '<br>' + '<br>'
+                                + '<b>' + 'Name: ' + '</b>' + d.Name + '<br>'
+                                + '<b>' + 'Sex: ' + '</b>' + d.Sex + '<br>'
+                                + '<b>' + 'Age: ' + '</b>' + d.Age + '<br>'
+                                + '<b>' + 'Passenger Class: ' + '</b>' + d.Pclass + '<br>'
+                                + '<b>' + 'Survived: ' + '</b>' + d.Survived + '<br>')
+                    })
+                    .on('mouseout', function(d) {
+                        tooltip.style('visibility', 'hidden');
+                    });
+
+                // Create svg chart legend
+                var legend = svg.selectAll(".legend")
+                    .data(color.domain())
+                    .enter()
+                    .append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { 
+                        return "translate(0," + i * 20 + ")"; 
+                    });
+
+                // Append legend to svg chart
+                legend.append("rect")
+                    .attr("x", width - 18)
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", color);
+
+                legend.append("text")
+                    .attr("x", width - 24)
+                    .attr("y", 9)
+                    .attr("dy", ".35em")
+                    .style("text-anchor", "end")
+                    .text(function(d) { 
+                    return d; 
+                    });                
+            }); // End of by age button
+      
+        // Display survivors by passenger class
+        var by_sur_vs_pclass = d3.select('body')
+            .append('div')
+            .attr('class', 'by_sur_vs_pclass')
+            .text('Survivors By Passenger Class')
+            .on('click', function(d) {
+                d3.selectAll('svg').remove();
+
+                // Create svg container and chart area
+                var svg = d3.select('body')
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                // Set range of pixels to be used by X-axis in svg container
+                var x = d3.scale.linear()
+                    .range([0, width]);
+
+                // Set X-axis to bottom and scale based on x
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom');        
+
+                // Set range of pixels to be used by Y-axis in svg container (Top-down)
+                var y = d3.scale.linear()
+                    .range([height, 0]);
+
+                // Set X-axis to left and scale based on x
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left');
+
+                // Set color scale
+                var color = d3.scale.category10();
+    
+                // Set X-axis domains, values to be used on X-axis with nice rounding
+                x.domain(d3.extent(data, function(d) { 
+                    return d.Pclass; 
+                })).nice();
+
+                // Set X-axis domains, values to be used on Y-axis with nice rounding
+                y.domain(d3.extent(data, function(d) { 
+                    return d.Survived; 
+                })).nice();
+
+                // Append X-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', 'translate(0,' + height + ')')
+                    .call(xAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('x', width)
+                    .attr('y', -6) // Unsure of the function of this attribute
+                    .style('text-anchor', 'end')
+                    .text('Passenger Class');
+
+                // Append Y-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .call(yAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', 6) // Unsure of the function of this attribute
+                    .attr('dy', '.71em') // Spacing for text
+                    .style('text-anchor', 'end')
+                    .text('Survived/Perished');               
+                
+                // Append dots to svg chart
+                svg.selectAll('.dot')
+                    .data(data)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'dot')
+                    .attr('r', 3.5)
+                    .attr('cx', function(d) { 
+                        return x(d.Pclass); 
+                    })
+                    .attr('cy', function(d) { 
+                        return y(d.Survived); 
+                    })
+                    .on('mouseover', function(d) {
+                        tooltip.style('visibility', 'visible')
+                            .style('top', (event.pageY - 10) + 'px')
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('height', 30 + 'px')
+                            .style('width', 320 + 'px')
+                            .html('<b>' + 'Number of Survivors: ' + '</b>' + d.Survivors + '<br>'
+                                + '<b>' + 'Passenger Class: ' + '</b>' + d.Pclass + '<br>')
+                    })
+                    .on('mouseout', function(d) {
+                        tooltip.style('visibility', 'hidden');
+                    });
+
+                // Create svg chart legend
+                var legend = svg.selectAll(".legend")
+                    .data(color.domain())
+                    .enter()
+                    .append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { 
+                        return "translate(0," + i * 20 + ")"; 
+                    });
+
+                // Append legend to svg chart
+                legend.append("rect")
+                    .attr("x", width - 18)
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", color);
+
+                legend.append("text")
+                    .attr("x", width - 24)
+                    .attr("y", 9)
+                    .attr("dy", ".35em")
+                    .style("text-anchor", "end")
+                    .text(function(d) { 
+                    return d; 
+                    });   
+            }) //End of by passenger class
+
+        // Remove current svg container
+        var combine = d3.select('body')
+            .append('div')
+            .attr('class', 'combine')
+            .text('Survivors By Age/Pclass')
+            .on('click', function(d) {
+                d3.selectAll('svg').remove();
+
+                // Create svg container and chart area
+                var svg = d3.select('body')
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom)
+                    .append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                // Set range of pixels to be used by X-axis in svg container
+                var x = d3.scale.linear()
+                    .range([0, width]);
+
+                // Set X-axis to bottom and scale based on x
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient('bottom');        
+
+                // Set range of pixels to be used by Y-axis in svg container (Top-down)
+                var y = d3.scale.linear()
+                .range([height, 0]);
+
+                // Set X-axis to left and scale based on x
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient('left');
+
+                // Set color scale
+                var color = d3.scale.category10();
+    
+                // Set X-axis domains, values to be used on X-axis with nice rounding
+                x.domain(d3.extent(data, function(d) { 
+                    return d.Age; 
+                })).nice();
+
+                // Set X-axis domains, values to be used on Y-axis with nice rounding
+                y.domain(d3.extent(data, function(d) { 
+                    return d.Pclass 
+                })).nice();
+
+                // Append X-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'x axis')
+                    .attr('transform', 'translate(0,' + height + ')')
+                    .call(xAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('x', width)
+                    .attr('y', -6) // Unsure of the function of this attribute
+                    .style('text-anchor', 'end')
+                    .text('Age');
+
+                // Append Y-axis to svg chart
+                svg.append('g')
+                    .attr('class', 'y axis')
+                    .call(yAxis)
+                    .append('text')
+                    .attr('class', 'label')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', 6) // Unsure of the function of this attribute
+                    .attr('dy', '.71em') // Spacing for text
+                    .style('text-anchor', 'end')
+                    .text('Passenger Class');                
+                
+
+                // Append dots to svg chart
+                svg.selectAll('.dot')
+                    .data(data)
+                    .enter()
+                    .append('circle')
+                    .attr('class', 'dot')
+                    .attr('r', 3.5)
+                    .attr('cx', function(d) { 
+                        return x(d.Age); 
+                    })
+                    .attr('cy', function(d) { 
+                        return y(d.Pclass); 
+                    })
+                    .style('fill', function(d) { 
+                        return color(d.Survived); 
+                    })
+                    .on('mouseover', function(d) {
+                        tooltip.style('visibility', 'visible')
+                            .style('top', (event.pageY - 10) + 'px')
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('height', 100 + 'px')
+                            .style('width', 320 + 'px')
+                            .html('<b>' + 'Location: ' + '</b>' + d.Embarked + '<br>' + '<br>'
+                                + '<b>' + 'Name: ' + '</b>' + d.Name + '<br>'
+                                + '<b>' + 'Sex: ' + '</b>' + d.Sex + '<br>'
+                                + '<b>' + 'Age: ' + '</b>' + d.Age + '<br>'
+                                + '<b>' + 'Passenger Class: ' + '</b>' + d.Pclass + '<br>'
+                                + '<b>' + 'Survived: ' + '</b>' + d.Survived + '<br>')
+                    })
+                    .on('mouseout', function(d) {
+                        tooltip.style('visibility', 'hidden');
+                    });
+
+                // Create svg chart legend
+                var legend = svg.selectAll(".legend")
+                    .data(color.domain())
+                    .enter()
+                    .append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { 
+                        return "translate(0," + i * 20 + ")"; 
+                    });
+
+                // Append legend to svg chart
+                legend.append("rect")
+                    .attr("x", width - 18)
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", color);
+
+                legend.append("text")
+                    .attr("x", width - 24)
+                    .attr("y", 9)
+                    .attr("dy", ".35em")
+                    .style("text-anchor", "end")
+                    .text(function(d) { 
+                    return d; 
+                    });   
+            }) // End of age/pclass button
+          } // End of function plot_points
+      </script>
+  </head>
+<body>
+  <script type='text/javascript'>
+    /*
+        Use D3 to load the GeoJSON file
+        */
+    // Load titanic data and send data to function plot_points
+    d3.csv('titanic_data - Copy.csv', function(d) {
+        d['Survived'] = +d['Survived'];
+        d['Survivors'] = +d['Survivors'],
+        d['Pclass'] = +d['Pclass']; 
+        d['Age'] = +d['Age'];
+        d['SibSp'] = +d['SibSp'];
+        d['Fare'] = +d['Fare'];
+        return d;
+      }, plot_points);
+  </script>
+</body>
+</html>

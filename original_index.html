@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <script src='http://d3js.org/d3.v3.min.js'></script>
+    <style>
+      h2 {
+        text-align: center;
+      }
+
+      div.tooltip { 
+        position: absolute;     
+        text-align: left;     
+        width: 210px;          
+        height: 355px;         
+        padding: 2px;       
+        font: 12px sans-serif;    
+        color: lightgrey;
+        background: rgb(40, 37, 37); 
+        border: 0px;    
+        border-radius: 8px;     
+        pointer-events: none;     
+      }
+
+      div.default {
+        position: fixed;
+        text-align: center;  
+        top: 5px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.by_survivors {
+        position: fixed;
+        text-align: center;  
+        top: 30px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.scatter {
+        position: fixed;
+        text-align: center;  
+        top: 55px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+    </style>
+    <script type='text/javascript'>  
+
+    // Function to draw world map
+    function draw_world(geo_data) {
+
+      // Create title
+      d3.select('body')
+        .append('h2')
+        .text('Titanic Data Infographics (Mouseover for Details)')
+
+      // Use strict and set 'container' size
+      'use strict';
+      var margin = 75,
+        width = 1400 - margin,
+        height = 600 - margin;
+
+      // Select body of html and create svg canvas, g
+      var svg = d3.select('body')
+        .append('svg')
+        .attr('width', width + margin)
+        .attr('height', height + margin)
+        .append('g')
+        .attr('class', 'map');
+
+      // Project map
+      var projection = d3.geo.mercator()
+        .scale(2000)
+        .translate([width / 1.5, height / 0.22]);
+        
+      // Create paths
+      var path = d3.geo.path().projection(projection);
+
+      // Select and create path to draw map
+      var map = svg.selectAll('path')
+        .data(geo_data.features)
+        .enter()
+        .append('path')
+        .attr('d', path)
+        .style('fill', 'aliceblue')
+        .style('stroke', 'black')
+        .style('stroke-width', 0.5);
+
+      // Load titanic data and send data to function plot_points
+      d3.csv('titanic_data.csv', function(d) {
+        d['Survived'] = +d['Survived'];
+        d['Pclass'] = +d['Pclass']; 
+        d['Age'] = +d['Age'];
+        d['SibSp'] = +d['SibSp'];
+        d['Fare'] = +d['Fare'];
+        return d;
+      }, plot_points);
+
+      // Draw/plot cicrles onto map
+      function plot_points(data) {
+
+        // Key and rollup/group function based on place of embark
+        var embark_data = d3.nest().key(function(d) {
+          return d['Embarked'];
+        })
+          .rollup(embark)
+          .entries(data); // End of rollup
+
+        // Function to extract data based on embark location
+        function embark(location) {
+
+          var chart_age = [];
+            for (var i = 0; i < location.length; i++) {
+              chart_age.push(location[i].Age);
+            };
+
+          var male = d3.sum(location, function(d) {
+            if (d['Sex'] === 'male') {
+              return 1;
+            }
+          });
+
+          var female = d3.sum(location, function(d) {
+            if (d['Sex'] === 'female') {
+              return 1;;
+            }
+          });
+
+          var su_male = d3.sum(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return 1;
+            };
+          });
+
+          var su_female = d3.sum(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return 1;
+            };
+          });
+
+          var total_survivors = d3.sum(location, function(d) {
+            return d['Survived'];
+          });
+
+          var proportion = total_survivors / (male + female);
+
+          var min_pclass = d3.min(location, function(d) {
+            return d['Pclass'];
+          });
+
+          var max_pclass = d3.max(location, function(d) {
+            return d['Pclass'];
+          });
+
+          var avg_pclass = d3.mean(location, function(d) {
+            return d['Pclass'];
+          });
+
+          var median_pclass = d3.median(location, function(d) {
+            return d['Pclass'];
+          });
+
+          var min_age = d3.min(location, function(d) {
+            return d['Age'];
+          });
+
+          var max_age = d3.max(location, function(d) {
+            return d['Age'];
+          });
+
+          var median_age = d3.median(location, function(d) {
+            return d['Age'];
+          });
+
+          var avg_age = d3.mean(location, function(d) {
+            return d['Age'];
+          });
+
+          var min_sibsp = d3.min(location, function(d) {
+            return d['SibSp'];
+          });
+
+          var max_sibsp = d3.max(location, function(d) {
+            return d['SibSp'];
+          });
+
+          var median_sibsp = d3.median(location, function(d) {
+            return d['SibSp'];
+          });
+
+          var avg_sib = d3.mean(location, function(d) {
+            return d['SibSp'];
+          });
+
+          var min_fare = d3.min(location, function(d) {
+            return d['Fare'];
+          });
+
+          var median_fare = d3.median(location, function(d) {
+            return d['Fare'];
+          });
+
+          var max_fare = d3.max(location, function(d) {
+            return d['Fare'];
+          });
+
+          var avg_fare = d3.mean(location, function(d) {
+            return d['Fare'];
+          });
+
+          var coords = location.map(function(d){
+            return projection([+d.long, +d.lat]);
+          });
+
+          var center_coord_x = d3.mean(coords, function(d) {
+            return d[0];
+          });
+
+          var center_coord_y = d3.mean(coords, function(d) {
+            return d[1];
+          });
+
+          var avg_su_age = d3.mean(location, function(d) {
+            if (d['Survived'] === 1) {
+              return d['Age'];
+            };
+          });
+
+          var avg_male_su_age = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return d['Age'];
+            };
+          });
+
+          var avg_female_su_age = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return d['Age'];
+            };
+          });
+
+          var avg_su_pclass = d3.mean(location, function(d) {
+            if (d['Survived'] === 1) {
+              return d['Pclass'];
+            };
+          });
+
+          var avg_su_male_pclass = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return d['Pclass'];
+            };
+          });
+
+          var avg_su_female_pclass = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return d['Pclass'];
+            };
+          });
+
+          var avg_su_fare = d3.mean(location, function(d) {
+            if (d['Survived'] === 1) {
+              return d['Fare'];
+            };
+          });
+
+          var avg_su_male_fare = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'male') {
+              return d['Fare'];
+            };
+          });
+
+          var avg_su_female_fare = d3.mean(location, function(d) {
+            if (d['Survived'] === 1 && d['Sex'] === 'female') {
+              return d['Fare'];
+            };
+          });
+
+          return {
+            'Male': male,
+            'Female': female,
+            'su_male': su_male,
+            'su_female': su_female,
+            'Survived': total_survivors,
+            'proportion': proportion.toFixed(3),
+            'min_pclass': min_pclass.toFixed(3),
+            'median_pclass': median_pclass.toFixed(3),
+            'max_pclass': max_pclass.toFixed(3),
+            'Pclass': avg_pclass.toFixed(3),
+            'min_age': min_age.toFixed(3),
+            'median_age': median_age.toFixed(3),
+            'max_age': max_age.toFixed(3),
+            'Age': avg_age.toFixed(3),
+            'min_sibsp': min_sibsp.toFixed(3),
+            'max_sibsp': max_sibsp.toFixed(3),
+            'median_sibsp': median_sibsp.toFixed(3),
+            'SibSp': avg_sib.toFixed(3),
+            'min_fare': min_fare.toFixed(3),
+            'median_fare': median_fare.toFixed(3),
+            'max_fare': max_fare.toFixed(3),
+            'Fare': avg_fare.toFixed(3),
+            'x': center_coord_x,
+            'y': center_coord_y,
+            'chart_age': chart_age,
+            'avg_su_age': avg_su_age.toFixed(3),
+            'avg_male_su_age': avg_male_su_age.toFixed(3),
+            'avg_female_su_age': avg_female_su_age.toFixed(3),
+            'avg_su_pclass': avg_su_pclass.toFixed(3),
+            'avg_su_male_pclass': avg_su_male_pclass.toFixed(3),
+            'avg_su_female_pclass': avg_su_female_pclass.toFixed(3),
+            'avg_su_fare': avg_su_fare.toFixed(3),
+            'avg_su_male_fare': avg_su_male_fare.toFixed(3),
+            'avg_su_female_fare': avg_su_female_fare.toFixed(3)
+          };
+        } // End of function embark_data          
+
+      // Create Tooltip
+      var tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('z-index', '10')
+        .style('visibility', 'hidden');
+
+      // Append circle and mouseover effects for default tab
+      svg.append('g')
+        .attr('class', 'point')
+        .selectAll('circle')
+        .data(embark_data)
+        .enter()
+        .append('circle')
+        .attr('cx', function(d) { 
+          return d.values['x']; 
+        })
+        .attr('cy', function(d) { return d.values['y']; 
+        })              
+        .attr('r', function(d) {
+          return (d.values['Male'] + d.values['Female']) / 15;
+        })
+        .attr('fill', 'green')
+        .attr('stroke', 'black')
+        .attr('stroke-width', 0.5)
+        .attr('opacity', 0.8)
+        .on('mouseover', function(d) {
+          d3.select(this).style('fill', 'red')
+          tooltip.style('visibility', 'visible')
+            .style('top', (event.pageY - 10) + 'px')
+            .style('left', (event.pageX + 10) + 'px')
+            .html('<b>' + 'Location: ' + '</b>' + d.key + '<br>' + '<br>'
+              + '<b>' + 'Number of Male Passengers: ' + '</b>' + d.values['Male'] + '<br>' 
+              + '<b>' + 'Number of Female Passengers: ' + '</b>' + d.values['Female'] + '<br>' 
+              + '<b>' + 'Total Number of Passengers: ' + '</b>' + (d.values['Male'] + d.values['Female']) + '<br>' + '<br>' 
+              + '<b>' + 'Average Passenger Age: ' + '</b>' + d.values['Age'] + '<br>' 
+              + '<b>' + 'Minimum Passenger Age: ' + '</b>' + d.values['min_age'] + '<br>'
+              + '<b>' + 'Maximum Passenger Age: ' + '</b>' + d.values['max_age'] + '<br>'
+              + '<b>' + 'Median Passenger Age: ' + '</b>' + d.values['median_age'] + '<br>' + '<br>' 
+              + '<b>' + 'Average Passenger Class: ' + '</b>' + d.values['Pclass'] + '<br>'
+              + '<b>' + 'Minimum Passenger Class: ' + '</b>' + d.values['min_pclass'] + '<br>'
+              + '<b>' + 'Maximum Passenger Class: ' + '</b>' + d.values['max_pclass'] + '<br>' 
+              + '<b>' + 'Median Passenger Class: ' + '</b>' + d.values['median_pclass'] + '<br>'+ '<br>' 
+              + '<b>' + 'Average No. of Siblings: ' + '</b>' + d.values['SibSp'] + '<br>'
+              + '<b>' + 'Minimum No. of Siblings: ' + '</b>' + d.values['min_sibsp'] + '<br>'
+              + '<b>' + 'Maximum No. of Siblings: ' + '</b>' + d.values['max_sibsp'] + '<br>'
+              + '<b>' + 'Median No. of Siblings: ' + '</b>' + d.values['median_sibsp'] + '<br>' + '<br>' 
+              + '<b>' + 'Average Fare: ' + '</b>' + d.values['Fare'] + '<br>'
+              + '<b>' + 'Minimum Fare: ' + '</b>' + d.values['min_fare'] + '<br>'
+              + '<b>' + 'Maximum Fare: ' + '</b>' + d.values['max_fare'] + '<br>'
+              + '<b>' + 'Median Fare: ' + '</b>' + d.values['median_fare'] + '<br>' + '<br>')
+        })
+        .on('mouseout', function(d) {
+          d3.select(this).style('fill', 'green');
+          tooltip.style('visibility', 'hidden');
+        }); // End of circle and tooltip 
+
+      // Reset to default/summary page
+      var d_button = d3.select('body')
+        .append('div')
+        .attr('class', 'default')
+        .text('Default/Summary Stats')
+        .on('click', function(d) {
+          d3.selectAll('svg').remove();
+          d3.selectAll('h2').remove();
+          d3.json('world_countries.json', draw_world);
+        });
+
+      // Function to re-draw world map and circles for survivors data
+      function re_draw_world_map(world_data) {
+        
+        // Set margin
+        var margin = 75,
+          width = 1400 - margin,
+          height = 600 - margin;
+
+        // Select body of html and add svg, g
+        var svg = d3.select('body')
+          .append('svg')
+          .attr('width', width + margin)
+          .attr('height', height + margin)
+          .append('g')
+          .attr('class', 'map');
+
+        // Project map
+        var projection = d3.geo.mercator()
+          .scale(2000)
+          .translate([width / 1.5, height / 0.22]);
+        
+        // Create paths
+        var path = d3.geo.path().projection(projection)
+
+        // Select and create path to draw map
+        var map = svg.selectAll('path')
+          .data(world_data.features)
+          .enter()
+          .append('path')
+          .attr('d', path)
+          .style('fill', 'aliceblue')
+          .style('stroke', 'black')
+          .style('stroke-width', 0.5);
+
+        // Append circle and mouseover effects for survivors tab
+        svg.append('g')
+          .attr('class', 'point')
+          .selectAll('circle')
+          .data(embark_data)
+          .enter()
+          .append('circle')
+          .attr('cx', function(d) { 
+            return d.values['x']; 
+          })
+          .attr('cy', function(d) { 
+            return d.values['y']; 
+          })      
+          .attr('r', function(d) {
+            return (d.values['proportion'] * 50);
+          })
+          .attr('fill', 'purple')
+          .attr('stroke', 'black')
+          .attr('stroke-width', 0.5)
+          .attr('opacity', 0.8)                
+          .on('mouseover', function(d) {
+            d3.select(this).style('fill', 'red');
+            tooltip.style('visibility', 'visible')
+              .style('top', (event.pageY - 10) + 'px')
+              .style('left', (event.pageX + 10) + 'px')
+              .style('height', 240 + 'px')
+              .style('width', 300 + 'px')
+              .html('<b>' + 'Location: ' + '</b>' + d.key + '<br>' + '<br>'
+                + '<b>' + 'Number of Male Survivors: ' + '</b>' + d.values['su_male'] + '<br>'
+                + '<b>' + 'Number of Female Survivors: ' + '</b>' + d.values['su_female'] + '<br>'
+                + '<b>' + 'Total Number of Survivors: ' + '</b>' + d.values['Survived'] + '<br>' + '<br>'
+                + '<b>' + 'Average Survivors Age: ' + '</b>' + d.values['avg_su_age'] + '<br>'
+                + '<b>' + 'Average Male Survivors Age: ' + '</b>' + d.values['avg_male_su_age'] + '<br>'
+                + '<b>' + 'Average Female Survivors Age: ' + '</b>' + d.values['avg_female_su_age'] + '<br>' + '<br>'
+                + '<b>' + 'Average Survivors Passenger Class: ' + '</b>' + d.values['avg_su_pclass'] + '<br>'
+                + '<b>' + 'Average Male Survivors Passenger Class: ' + '</b>' + d.values['avg_su_male_pclass'] + '<br>'
+                + '<b>' + 'Average Female Survivors Passenger Class: ' + '</b>' + d.values['avg_su_female_pclass'] + '<br>' + '<br>'
+                + '<b>' + 'Average Survivors Fare: ' + '</b>' + d.values['avg_su_fare'] + '<br>'
+                + '<b>' + 'Average Male Survivors Fare: ' + '</b>' + d.values['avg_su_male_fare'] + '<br>'
+                + '<b>' + 'Average Female Survivors Fare: ' + '</b>' + d.values['avg_su_female_fare'] + '<br>')
+          })
+          .on('mouseout', function(d) {
+            d3.select(this).style('fill', 'purple');
+            tooltip.style('visibility', 'hidden');
+          });
+      } // End of function re_draw_world_map
+
+      // Create button to display data by survivors
+      var bs_button = d3.select('body')
+        .append('div')
+        .attr('class', 'by_survivors')
+        .text('Display Data By Survivors')
+        .on('click', function(d) {
+          d3.selectAll('svg').remove();
+          d3.json('world_countries.json', re_draw_world_map);
+        }) //End of survivors button        
+
+      // Create margin/container for scatter-plot
+      var margin = {top: 20, right: 20, bottom: 30, left: 230},
+        width = 1400 - margin.left - margin.right,
+        height = 800 - margin.top - margin.bottom;
+
+      // Set range of pixels to be used by X-axis in svg container
+      var x = d3.scale.linear()
+        .range([0, width]);
+
+      // Set X-axis to bottom and scale based on x
+      var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient('bottom');        
+
+      // Set range of pixels to be used by Y-axis in svg container (Top-down)
+      var y = d3.scale.linear()
+        .range([height, 0]);
+
+      // Set X-axis to left and scale based on x
+      var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient('left');
+
+      // Set color scale
+      var color = d3.scale.category10();
+            
+      // Create scatter-plot
+      // Remove current svg container
+      var scatterp = d3.select('body')
+        .append('div')
+        .attr('class', 'scatter')
+        .text('Display Data by Age/Passenger Class')
+        .on('click', function(d) {
+          d3.selectAll('svg').remove();
+          
+          // Re-create svg container and chart area
+          var svg = d3.select('body')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+          // Set X-axis domains, values to be used on X-axis with nice rounding
+          x.domain(d3.extent(data, function(d) { 
+            return d.Age; 
+          })).nice();
+
+          // Set X-axis domains, values to be used on Y-axis with nice rounding
+          y.domain(d3.extent(data, function(d) { 
+            return d.Pclass; 
+          })).nice();
+
+          // Append X-axis to svg chart
+          svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis)
+            .append('text')
+            .attr('class', 'label')
+            .attr('x', width)
+            .attr('y', -6) // Unsure of the function of this attribute
+            .style('text-anchor', 'end')
+            .text('Age');
+
+          // Append Y-axis to svg chart
+          svg.append('g')
+            .attr('class', 'y axis')
+            .call(yAxis)
+            .append('text')
+            .attr('class', 'label')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 6) // Unsure of the function of this attribute
+            .attr('dy', '.71em') // Spacing for text
+            .style('text-anchor', 'end')
+            .text('Passenger Class');
+
+          // Append dots to svg chart
+          svg.selectAll('.dot')
+            .data(data)
+            .enter()
+            .append('circle')
+            .attr('class', 'dot')
+            .attr('r', 3.5)
+            .attr('cx', function(d) { 
+              return x(d.Age); 
+            })
+            .attr('cy', function(d) { 
+              return y(d.Pclass); 
+            })
+            .style('fill', function(d) { 
+              return color(d.Survived); 
+            })
+            .on('mouseover', function(d) {
+              tooltip.style('visibility', 'visible')
+              .style('top', (event.pageY - 10) + 'px')
+              .style('left', (event.pageX + 10) + 'px')
+              .style('height', 100 + 'px')
+              .style('width', 320 + 'px')
+              .html('<b>' + 'Location: ' + '</b>' + d.Embarked + '<br>' + '<br>'
+                + '<b>' + 'Name: ' + '</b>' + d.Name + '<br>'
+                + '<b>' + 'Sex: ' + '</b>' + d.Sex + '<br>'
+                + '<b>' + 'Age: ' + '</b>' + d.Age + '<br>'
+                + '<b>' + 'Passenger Class: ' + '</b>' + d.Pclass + '<br>'
+                + '<b>' + 'Survived: ' + '</b>' + d.Survived + '<br>')
+            })
+            .on('mouseout', function(d) {
+              tooltip.style('visibility', 'hidden');
+            });
+
+          // Create svg chart legend
+          var legend = svg.selectAll(".legend")
+            .data(color.domain())
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { 
+              return "translate(0," + i * 20 + ")"; 
+            });
+
+          // Append legend to svg chart
+          legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+          legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function(d) { 
+              return d; 
+            });                
+              }) // End of scatter plot
+          } // End of function plot_points
+      } // End of function draw_world
+      </script>
+  </head>
+<body>
+  <script type='text/javascript'>
+  /*
+    Use D3 to load the GeoJSON file
+    */
+  // Load word map data
+d3.json('world_countries.json', draw_world);
+  </script>
+</body>
+</html>

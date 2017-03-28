@@ -1,0 +1,30 @@
+## Data Visualization Project
+
+# Summary:
+Goal of this project is to create a visualization/infographics to display information about the Titanic passengers such as their embark location, age, did they survive and etc.
+Original index.html file was not provided as the final file was adapted from visualization used in the course.
+(When selecting the dataset, the requirement listed on the page was for demo or infographics)
+
+
+Issues Encountered:
+* To place the geographical locations of the embarkation point, GPS coordinates were added to the csv file
+* Values in the Embarked column were also changed to reflect their current and full locations
+* Removed entries from csv file which did not have an embark location
+* Had to repeat some of the codes (E.G. re-drawing the world map), i feel that it should be possible to separate this and the circle creating function to avoid repetition but, I have not been able to achieve it
+* After being stuck for some time, I was able to create a scatter-plot after referring to the below resource but still, I am not that clear on some of the functions of the codes and, I able unable to shrink and adjust the y-axis to just 1, 2 and 3
+* If possible, I would like to also create a bar/grouped bar chart but have been unsucessful so far
+
+
+# Design:
+* To reflect the demographics of the passengers, I chose to draw a world map and on it, plot the locations where the passengers boarded from there, I can also display additional information about them in a tooltip
+* Updated circle radius to be based on number of passengers (Default Tab) and proportion based on surviviors (Survivors Tab)
+* Updated circle color besides radius to indicate data and visual change
+* Included toolip to provide more information about each point in the scatter-plot
+
+
+# Feedback:
+* Circle radius in both the Default and Survivors Tab are the same, a location may have more survivors based on the amount of passengers, will be good to set radius to be a proportion of survivors/passengers
+* Scatter-plot could be updated with a tooltip to show more information
+
+# Resources:
+* https://bl.ocks.org/mbostock/3887118 (For scatter-plot chart)

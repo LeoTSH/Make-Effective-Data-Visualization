@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+    <style>
+      h2 {
+        text-align: center;
+      }
+
+      div.by_sur_vs_location {
+        position: fixed;
+        text-align: center;  
+        top: 5px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.by_sur_vs_pclass {
+        position: fixed;
+        text-align: center;  
+        top: 30px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+      div.combine {
+        position: fixed;
+        text-align: center;  
+        top: 55px;
+        left: 5px;
+        color: lightgrey;
+        background-color: rgb(40, 37, 37);
+        padding: 3px;
+        width: 170px;
+        margin: 7px;
+        border: 0px;  
+        border-radius: 8px;
+        font: 12px sans-serif;
+      }
+
+    </style>
+  </head>
+<body>
+  <script type='text/javascript'>
+    // Create title
+    d3.select('body')
+      .append('h2')
+      .html('Titanic Survivors Infographics' + '<br>' + 'Where did the survivors originate from?' + '<br>' + 'Passengers are more likely to survive in First Class!')
+
+    // Create margin/container for chart
+    var margin = {top: 20, right: 20, bottom: 30, left: 230},
+      width = 1400 - margin.left - margin.right,
+      height = 800 - margin.top - margin.bottom;
+
+    // Create svg container and chart area
+    var svg = d3.select('body')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    // Load titanic data 
+    d3.csv('titanic_data.csv', function(data) {
+      var myChart = new dimple.chart(svg, data);
+      myChart.setBounds(60, 10, 1050, 700) // x to the right, y to the down, size of chart
+      var x = myChart.addCategoryAxis('x' ,['Embarked', 'Sex']);
+      var y = myChart.addCategoryAxis('y', 'Lo_Se_Survival_Rate');
+      x.fontSize = '18';
+      y.fontSize = '18';
+      var series = myChart.addSeries(['Lo_Se_Survival_Rate', 'Embarked', 'Sex'], dimple.plot.bar, [x, y]);      
+      series.getTooltipText = function(data) {
+      	return [
+      		'Sex: ' + data.aggField[2],
+      		'Embarked: ' + data.aggField[1],
+      		'Survival Rate: ' + data.aggField[0]
+      	];
+      };
+      myChart.addLegend(615, 0, 520, 20, "right");
+      myChart.assignColor('female', 'rgb(251, 128, 114)', 1);
+      x.title = "Embark Location / Sex: Female | Male";
+      y.title = 'Survival Rate (%) Based on Embark Location and Sex';
+      myChart.draw();
+    });
+
+    // Show survivors data by location button
+    var by_sur_vs_location = d3.select('body')
+      .append('div')
+      .attr('class', 'by_sur_vs_location')
+      .text('Survivors By Location')
+      .on('click', function(d) {
+        d3.selectAll('svg').remove();
+        d3.selectAll('h2').remove();
+        
+        // Create title
+        d3.select('body')
+          .append('h2')
+          .html('Titanic Survivors Data' + '<br>' + 'Where did the survivors originate from?' + '<br>' + 'Passengers are more likely to survive if they are from Cherbourg!')
+
+        // Create svg container and chart area
+        var svg = d3.select('body')
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // Load titanic data 
+        d3.csv('titanic_data.csv', function(data) {
+          var myChart = new dimple.chart(svg, data);
+          myChart.setBounds(60, 10, 1050, 700) // x to the right, y to the down, size of chart
+          var x = myChart.addCategoryAxis('x' ,['Embarked', 'Sex']);
+          var y = myChart.addCategoryAxis('y', 'Lo_Se_Survival_Rate');
+          x.fontSize = '18';
+          y.fontSize = '18';
+          var series = myChart.addSeries(['Lo_Se_Survival_Rate', 'Embarked', 'Sex'], dimple.plot.bar, [x, y]);      
+          series.getTooltipText = function(data) {
+          	return [
+          		'Sex: ' + data.aggField[2],
+      			'Embarked: ' + data.aggField[1],
+      			'Survival Rate: ' + data.aggField[0]
+      			];
+      	  };
+          myChart.addLegend(615, 0, 520, 20, "right");
+          myChart.assignColor('female', 'rgb(251, 128, 114)', 1);
+          x.title = "Embark Location / Sex: Female | Male";
+          y.title = 'Survival Rate (%) Based on Embark Location and Sex';
+          myChart.draw();         
+        });
+      }); // End of survivors by location button
+
+    // Show survivors data by passenger class button
+    var by_sur_vs_pclass = d3.select('body')
+      .append('div')
+      .attr('class', 'by_sur_vs_pclass')
+      .text('Survivors By Passenger Class')
+      .on('click', function(d) {
+        d3.selectAll('svg').remove();
+        d3.selectAll('h2').remove();
+
+        // Create title
+        d3.select('body')
+          .append('h2')
+          .html('Titanic Survivors Data' + '<br>' + 'What Passenger Class did the survivors stay in?' + '<br>' + 'Passengers are more likely to survive in First Class!')
+        
+        // Create svg container and chart 
+        var svg = d3.select('body')
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // Load titanic data 
+        d3.csv('titanic_data.csv', function(data) {
+          var myChart = new dimple.chart(svg, data);
+          myChart.setBounds(60, 10, 1050, 700) // x to the right, y to the down,
+          var x = myChart.addCategoryAxis("x", ["Pclass", 'Sex']);
+          var y = myChart.addCategoryAxis("y", "Pc_Se_Survival_Rate");
+          x.fontSize = '18';
+          y.fontSize = '18';
+          var series = myChart.addSeries(['Pc_Se_Survival_Rate', 'Embarked', 'Sex'], dimple.plot.bar, [x, y]);      
+          series.getTooltipText = function(data) {
+          	return [
+      			'Sex: ' + data.aggField[2],
+      			'Embarked: ' + data.aggField[1],
+      			'Survival Rate: ' + data.aggField[0]
+      			];
+      		};
+          myChart.addLegend(615, 0, 520, 20, "right");
+          myChart.assignColor('female', 'rgb(251, 128, 114)', 1);
+          x.title = 'Passenger Classes / Sex: Female | Male';
+          y.title = 'Survival Rate (%) Based on Passenger Classes and Sex';
+          myChart.draw();
+        });
+      }); //End of survivors by passenger button
+
+    // Show survivors data by variable combination button
+    var combine = d3.select('body')
+      .append('div')
+      .attr('class', 'combine')
+      .text('Survivors By Location/Pclass')
+      .on('click', function(d) {
+        d3.selectAll('svg').remove();
+        d3.selectAll('h2').remove();
+        
+        // Create title
+        d3.select('body')
+          .append('h2')
+          .html('Titanic Survivors Data' + '<br>' + 'Lets see the survival rate when combined!' + '<br>' + 'Passengers who are Female have the best survival rates!');
+
+        // Create svg container and chart area
+        var svg = d3.select('body')
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+        // Load titanic data 
+        d3.csv('titanic_data.csv', function(data) {
+          var myChart = new dimple.chart(svg, data);
+          myChart.setBounds(60, 10, 1050, 700) // x to the right, y to the down,
+          var x = myChart.addCategoryAxis("x", ['Embarked', "Pclass"]);
+          var y = myChart.addCategoryAxis("y", "Lo_Pc_Survival_Rate");
+          x.fontSize = '18';
+          y.fontSize = '18';
+          // Add series
+          var series = myChart.addSeries(['Lo_Pc_Survival_Rate', 'Embarked', 'Pclass', 'Sex'], dimple.plot.bar, [x, y]);      
+          // Customize tooltip
+          series.getTooltipText = function(data) {
+          	return [
+          		'Sex: ' + data.aggField[3],
+          		'Embarked: ' + data.aggField[1],
+              'Passenger Class: ' + data.aggField[2],
+              'Survival Rate: ' + data.aggField[0]
+      			];
+      	  };         
+          legend = myChart.addLegend(615, 0, 520, 20, "right");
+          // Reverse legend order
+          legend._getEntries_old = legend._getEntries;
+          legend._getEntries = function() {
+          	return legend._getEntries_old.apply(this, arguments).reverse();
+          }
+          series.afterDraw = function (shape, data) {
+          // Get the shape as a d3 selection
+          var series = d3.select(shape),
+            rect = {
+              x: parseFloat(series.attr("x")),
+              y: parseFloat(series.attr("y")),
+              width: parseFloat(series.attr("width")),
+              height: parseFloat(series.attr("height"))
+            };
+
+          // Add a text label for the value
+          svg.append("text")
+            // Position in the centre of the shape (vertical position is
+            // manually set due to cross-browser problems with baseline)
+            .attr("x", rect.x + rect.width / 2)
+            .attr("y", rect.y + rect.height / 2 + 3.5)
+            // Centre align
+            .style("text-anchor", "middle")
+            .style("font-size", "9px")
+            .style("font-family", "sans-serif")
+            // Make it a little transparent to tone down the black
+            .style("opacity", 0.6)
+            // Prevent text cursor on hover and allow tooltips
+            .style("pointer-events", "none")
+            // Format the number
+            .text(data.aggField[2]);
+          };
+          x.title = 'Embark Location / Passenger Classes: 1 | 2 | 3';
+          y.title = 'Survival Rate (%) Based on Embark Location, Passenger Classes and Sex';
+          myChart.draw();
+        });
+      }); // End of combine data button
+  </script>
+</body>
+</html>

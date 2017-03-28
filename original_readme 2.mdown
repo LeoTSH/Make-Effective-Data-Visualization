@@ -1,0 +1,37 @@
+## Data Visualization Project
+
+# Summary:
+Goal of this project is to create a visualization/infographics to relationships that influenced the survival rate of the passengers.
+After analyzing the data, variables Passenger Class, Age and to a certain degree Age, affects survival rate.
+Combination of the variables ahve a greater effect on survivability.
+
+* More likely to survive if you are between 0.42 to 63 years old
+* More likely to survive if you are a First Class Passenger
+* More likely to survive if you are a female
+* Combination of the mentioned variables seem to provide the most effect
+
+Issues Encountered:
+* Still was not able to scale the Y-axis to be based on just the categorcal values I.E. 1, 2 and 3 for Passenger Class instead of 1.0 to 3.0
+* For the Passenger Class tab, ideally I would like to remove the plots for Survived = 0 for more clarity
+* Was trying to add a page for survivor statistics to provide some numbers but seems like text needed to be tied to shapes added to the SVG canvas
+* Codes are still quite long and I would like to shorten them if possible
+
+
+# Design:
+* Based on previous feedbacks, I decided to use scatter-plots to display the data after looking at the variables involved
+* Scatter-plots will allow me to better show the relationships between the variables such as which age has the most survivors and have more focus
+* Scatter-plot points are then color coded to better show their relationships
+* I dropped the world-map visualization as its more towards showing location data
+* There are still some short-comings for the visualizations and would like to improve them if possible but I would like some advice if I'm heading towards the right direction
+
+
+# Feedback:
+1. Circle radius in both the Default and Survivors Tab are the same, a location may have more survivors based on the amount of passengers, will be good to set radius to be a proportion of survivors/passengers
+
+2. Visulizations show lack of direction on what story/information they are trying to convey
+
+3. Try to color code plot points to show which category group they belong to
+
+
+# Resources:
+* https://bl.ocks.org/mbostock/3887118 (For scatter-plot chart)
